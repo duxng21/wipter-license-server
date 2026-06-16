@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wipter License Admin</title>
+  <style>
+    :root{color-scheme:dark;--bg:#07111f;--panel:#0d1b2f;--panel2:#10233d;--text:#eaf2ff;--muted:#91a4c4;--brand:#38d7ff;--danger:#fb7185;--ok:#4ade80;--warn:#facc15}*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:radial-gradient(circle at top left,#12325d,var(--bg) 38%,#030712);color:var(--text);min-height:100vh}.wrap{width:min(1180px,calc(100% - 28px));margin:0 auto;padding:28px 0}.card{background:rgba(13,27,47,.9);border:1px solid rgba(56,215,255,.16);border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.35);padding:22px}.top{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:18px}h1{margin:0;font-size:28px;letter-spacing:-.04em}.muted{color:var(--muted);font-size:13px}input{width:100%;background:#071426;border:1px solid rgba(148,163,184,.25);color:var(--text);border-radius:10px;padding:11px 12px;outline:none}button,.btn{border:0;border-radius:10px;padding:10px 13px;color:#04111f;background:linear-gradient(135deg,#38d7ff,#8b5cf6);font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}.btn2{color:var(--text);background:#172a45;border:1px solid rgba(148,163,184,.22)}.danger{color:#fff;background:linear-gradient(135deg,#fb7185,#be123c)}.warn{color:#1f1300;background:linear-gradient(135deg,#fde047,#f59e0b)}.ok{color:#022c18;background:linear-gradient(135deg,#86efac,#22c55e)}.login{min-height:100vh;display:grid;place-items:center;padding:18px}.login .card{width:min(420px,100%)}.alert{padding:12px 14px;border-radius:12px;margin:12px 0;font-weight:700}.err{background:rgba(251,113,133,.13);color:#fecdd3;border:1px solid rgba(251,113,133,.28)}.succ{background:rgba(74,222,128,.12);color:#bbf7d0;border:1px solid rgba(74,222,128,.24)}.toolbar{display:grid;grid-template-columns:1.2fr auto auto;gap:10px;margin:16px 0}table{width:100%;border-collapse:separate;border-spacing:0 8px}th{color:var(--muted);text-align:left;font-size:12px;padding:0 10px}td{background:rgba(16,35,61,.8);padding:12px 10px;border-top:1px solid rgba(148,163,184,.12);border-bottom:1px solid rgba(148,163,184,.12);vertical-align:middle;font-size:13px}td:first-child{border-left:1px solid rgba(148,163,184,.12);border-radius:12px 0 0 12px;font-family:Consolas,monospace;font-weight:800;color:#dff7ff}td:last-child{border-right:1px solid rgba(148,163,184,.12);border-radius:0 12px 12px 0}.status{display:inline-flex;padding:5px 9px;border-radius:999px;font-weight:900;font-size:12px}.unused{background:rgba(250,204,21,.15);color:#fde68a}.active{background:rgba(74,222,128,.15);color:#bbf7d0}.blocked{background:rgba(251,113,133,.15);color:#fecdd3}.actions{display:flex;gap:6px;flex-wrap:wrap}.hidden{display:none!important}@media(max-width:860px){.toolbar{grid-template-columns:1fr}table{display:block;overflow:auto}.top{align-items:flex-start;flex-direction:column}}
+  </style>
+</head>
+<body>
+  <main id="login" class="login">
+    <section class="card">
+      <h1>Wipter Admin</h1>
+      <p class="muted">Đăng nhập bằng ADMIN_SECRET trên Vercel.</p>
+      <div id="loginError" class="alert err hidden"></div>
+      <input id="secret" type="password" placeholder="Admin secret" autocomplete="current-password">
+      <div style="height:12px"></div>
+      <button style="width:100%" onclick="login()">Đăng nhập</button>
+    </section>
+  </main>
+
+  <main id="app" class="wrap hidden">
+    <div class="top"><div><h1>Wipter License Admin</h1><div class="muted">Quản lý key lifetime: 1 key = 1 máy</div></div><button class="btn2" onclick="logout()">Đăng xuất</button></div>
+    <div id="msg" class="alert hidden"></div>
+    <section class="card">
+      <div class="toolbar"><input id="note" placeholder="Ghi chú khách hàng"><button onclick="createKey()">+ Tạo key</button><button class="btn2" onclick="loadKeys()">Làm mới</button></div>
+      <div class="toolbar" style="grid-template-columns:1fr auto"><input id="search" placeholder="Tìm license / machineId / note"><button class="btn2" onclick="render()">Tìm</button></div>
+      <table><thead><tr><th>License</th><th>Trạng thái</th><th>Machine ID</th><th>Kích hoạt</th><th>Last seen</th><th>Ghi chú</th><th>Thao tác</th></tr></thead><tbody id="rows"></tbody></table>
+    </section>
+  </main>
+<script>
+let licenses=[];const $=id=>document.getElementById(id);function secret(){return localStorage.getItem('adminSecret')||''}function setMsg(t,type='succ'){const el=$('msg');el.textContent=t;el.className='alert '+type}function login(){const s=$('secret').value.trim();if(!s){$('loginError').textContent='Chưa nhập admin secret';$('loginError').classList.remove('hidden');return}localStorage.setItem('adminSecret',s);showApp();loadKeys()}function logout(){localStorage.removeItem('adminSecret');location.reload()}function showApp(){if(secret()){ $('login').classList.add('hidden');$('app').classList.remove('hidden')}else{$('login').classList.remove('hidden');$('app').classList.add('hidden')}}async function api(path,opt={}){const r=await fetch(path,{...opt,headers:{'Content-Type':'application/json','X-Admin-Secret':secret(),...(opt.headers||{})}});const data=await r.json();if(!data.ok)throw new Error(data.error||'Request failed');return data}async function loadKeys(){try{const r=await api('/api/admin/list-keys');licenses=r.licenses||[];render();setMsg('Đã tải danh sách key')}catch(e){setMsg(e.message,'err')}}async function createKey(){try{const r=await api('/api/admin/create-key',{method:'POST',body:JSON.stringify({note:$('note').value})});$('note').value='';setMsg('Đã tạo key: '+r.key);await loadKeys()}catch(e){setMsg(e.message,'err')}}async function action(name,key){if((name==='reset-key'||name==='delete-key')&&!confirm('Xác nhận thao tác với '+key+'?'))return;try{await api('/api/admin/'+name,{method:'POST',body:JSON.stringify({key})});setMsg('Đã xử lý '+key);await loadKeys()}catch(e){setMsg(e.message,'err')}}function render(){const q=$('search').value.trim().toLowerCase();const rows=licenses.filter(x=>!q||JSON.stringify(x).toLowerCase().includes(q));$('rows').innerHTML=rows.map(x=>`<tr><td>${x.license_key}</td><td><span class="status ${x.status}">${x.status}</span></td><td class="muted">${x.machine_id||'—'}</td><td class="muted">${x.activated_at||'—'}</td><td class="muted">${x.last_seen_at||'—'}</td><td>${x.note||''}</td><td><div class="actions">${x.status==='blocked'?`<button class="ok" onclick="action('unblock-key','${x.license_key}')">Mở</button>`:`<button class="danger" onclick="action('block-key','${x.license_key}')">Khóa</button>`}<button class="warn" onclick="action('reset-key','${x.license_key}')">Reset</button></div></td></tr>`).join('')||'<tr><td colspan="7" class="muted">Chưa có license nào.</td></tr>'}showApp();if(secret())loadKeys();
+</script>
+</body>
+</html>
