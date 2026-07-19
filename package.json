@@ -1,9 +1,8 @@
-﻿{
+{
   "name": "wipter-node-license-server",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "scripts": { "dev": "vercel dev", "start": "vercel dev" },
-  "dependencies": { "@supabase/supabase-js": "^2.45.4" },
-  "devDependencies": { "vercel": "^37.8.0" }
+  "engines": { "node": "22.x" },
+  "dependencies": { "@supabase/supabase-js": "^2.45.4" }
 }
