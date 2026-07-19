@@ -21,3 +21,13 @@ create table if not exists app_updates (
   updated_at timestamptz not null default now(),
   constraint app_updates_single_row check (id = 1)
 );
+create table if not exists app_images (
+  id integer primary key default 1,
+  pull_url text not null default '',
+  registry_username text not null default '',
+  registry_token_encrypted text not null default '',
+  enabled boolean not null default false,
+  updated_at timestamptz not null default now(),
+  constraint app_images_single_row check (id = 1)
+);
+insert into app_images (id) values (1) on conflict (id) do nothing;

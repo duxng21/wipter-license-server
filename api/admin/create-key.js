@@ -16,8 +16,8 @@ export default async function handler(req, res) {
       } while (await getLicense(db, key));
     }
 
-    if (!/^EAM-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key)) {
-      return send(res, 400, { ok: false, error: 'Invalid key format. Expected EAM-XXXX-XXXX-XXXX' });
+    if (!/^WNT-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key)) {
+      return send(res, 400, { ok: false, error: 'Invalid key format. Expected WNT-XXXX-XXXX-XXXX' });
     }
 
     const { data, error } = await db.from('licenses').insert({ license_key: key, status: 'unused', note }).select('*').single();
@@ -31,4 +31,5 @@ export default async function handler(req, res) {
     return send(res, 500, { ok: false, code: 'server_error', error: 'License server error.' });
   }
 }
+
 
